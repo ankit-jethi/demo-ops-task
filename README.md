@@ -6,10 +6,14 @@ There are 2 vagrant boxes - one with docker and the other one with kubernetes.
 
 ### Docker:
 - From the docker directory, run the [docker-vagrant-box.sh](../master/docker/docker-vagrant-box.sh).
+- After some time, the application should start on `http://localhost:8000`.
+>If you have an application already running on port 8000, then vagrant will adjust the docker app to run on a different port. To see which port the app is running on, run `vagrant port`.
 
 ### Kubernetes: (microk8s)
 > I don't have any experience with k8s, but I gave it a shot.
 - From the k8s directory, run the [k8s-vagrant-box.sh](../master/k8s/k8s-vagrant-box.sh).
+- After some time, the application should start on `http://localhost:8080`.
+>If you have an application already running on port 8080, then vagrant will adjust the k8s app to run on a different port. To see which port the app is running on, run `vagrant port`.
 
 #### More info:
 
