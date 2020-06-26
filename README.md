@@ -16,17 +16,17 @@ There are 2 vagrant boxes - one with docker and the other one with kubernetes.
 - Built the docker image based on **golang:1.13.12-alpine3.12** and pushed it to docker hub.
 Check the [Dockerfile](../master/docker/Dockerfile).
 
-- Restart policy:
+- Restart policy:  
 Set the restart policy to always.
 
-- Sysctl configuration:
+- Sysctl configuration:  
 Mostly configured referring the `/etc/sysctl.conf` file. A lot of helpful comments in there.
 Other changes referring the sources mentioned below.
 
-- [Docker daemon:](../master/docker/daemon.json)
+- [Docker daemon:](../master/docker/daemon.json)  
 Apart from keep logs size in check, enabled **live restore** to keep containers alive during daemon downtime.
 
-Other settings to consider:
+Other settings to consider:  
 For memory-intensive containers to run faster by giving more access to allocated memory.
 ```
 "default-shm-size": "64M"
