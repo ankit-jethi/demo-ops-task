@@ -1,0 +1,27 @@
+version: "3"
+services:
+  app:
+    depends_on:
+      - redis
+    image: ankitjethi/demo-app:latest
+    container_name: app
+    environment:
+      DEMO_APP_ADDR: :8080
+      DEMO_REDIS_ADDR: redis:6379
+    ports:
+      - "8000:8080"
+    networks:
+      - net
+    restart: always
+  redis:
+    image: redis:6.0.5-alpine3.12
+    container_name: redis
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - /data:/data
+    networks:
+      - net
+    restart: always
+
+networks:
+  net:

@@ -1,0 +1,85 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+    - name: setup hostname
+      hostname: 
+        name: demo-ops
+
+    - name: edit hosts file
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127\.0\.1\.1'
+        line: '127.0.1.1  demo-ops'
+
+    - name: create user
+      user:
+        name: demo
+        shell: /bin/bash
+        password: '$6$mysecretsalt$qJbapG68nyRab3gxvKWPUcs2g3t0oMHSHMnSKecYNpSi3CuZm.GbBqXO8BE6EI6P1JUefhA0qvD7b5LSh./PU1'
+
+    - name: copy custom sysctl file
+      copy:
+        src: /vagrant/60-sysctl.conf
+        dest: /etc/sysctl.d/
+      notify: load sysctl file
+
+    - name: set timezone
+      timezone:
+        name: Asia/Kolkata
+      notify: restart cron
+
+    - name: install microk8s
+      snap:
+        channel: 1.18/stable
+        classic: yes
+        name: microk8s
+        state: present
+
+    - name: add user to k8s group
+      user:
+        name: vagrant
+        append: yes
+        groups: ['microk8s']
+
+    - name: change ownership of .kube
+      file:
+        path: /home/vagrant/.kube
+        state: directory
+        recurse: yes
+        owner: vagrant
+
+    - name: enable microk8s add-ons
+      command:
+        cmd: microk8s enable dns storage
+
+    - name: create demo-ops namespace
+      command:
+        cmd: microk8s kubectl create namespace demo-ops
+
+    - name: copy k8s deployment files
+      copy:
+        src: /vagrant/{{ item }}
+        dest: /etc/demo-ops/
+      with_items:
+        - 01-resource-quota.yml
+        - 02-redis.yml
+        - 03-demo-app.yml
+      notify: kubectl apply
+
+  handlers:
+    - name: load sysctl file
+      command:
+        cmd: sysctl -p /etc/sysctl.d/60-sysctl.conf
+
+    - name: restart cron
+      service:
+        name: cron
+        state: restarted
+
+    - name: kubectl apply
+      command:
+        cmd: microk8s kubectl apply -f /etc/demo-ops/

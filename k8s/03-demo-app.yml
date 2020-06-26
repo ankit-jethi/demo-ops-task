@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-app-service
+  namespace: demo-ops
+spec:
+  selector:
+    app: demo-app
+  type:  NodePort
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  demo-app-deployment
+  labels:
+    app: demo-app
+  namespace: demo-ops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-app
+  template:
+    metadata:
+      labels:
+        app: demo-app
+    spec:
+      containers:
+      - image: ankitjethi/demo-app:latest
+        name: demo-app
+        env:
+        - name: DEMO_APP_ADDR
+          value: :8080
+        - name: DEMO_REDIS_ADDR
+          value: redis-service:6379
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 15
+          timeoutSeconds: 1
+          periodSeconds: 10        
+      restartPolicy: Always
